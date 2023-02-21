@@ -1,0 +1,20 @@
+#import packages
+import pandas as pd
+import numpy as np
+
+#ReadCSV
+my_data_tmp = pd.read_csv('C:\\Users\\Micha\\Documents\\Research\\CREP\\Adding It Up_ rawdata.csv')
+
+#create copy and inspect
+my_data = my_data_tmp.copy()
+pd.set_option('display.max_rows', None)
+my_data.head(250)
+
+#Create new variables that clean the data. 
+my_data['Pencil Control clean'] = my_data['Pencil Control'].replace('10 cents','10').replace('0.1','10').replace('$0.10 ','10')
+my_data['Magazine Standard clean'] = my_data['Magazine Standard'].replace('$0.45 ','45').replace('0.45','45').replace('0.9','90').replace('$0.90 ','90')
+my_data['Magazine control clean'] = my_data['Magazine_Control'].replace('.90$','90').replace('$0.45 ','45').replace('0.45','45').replace('0.9','90').replace('$0.90 ','90').replace('45 cents','45').replace('90 cents','90')
+my_data['pencil standard clean'] = my_data['Pencil_Standard'].replace('5 cents','5').replace('$0.05 ','5').replace('$0.10 ','10').replace('0.05','5').replace('0')
+
+#double check cleaning
+my_data.head()
