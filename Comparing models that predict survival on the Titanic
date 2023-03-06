@@ -1,0 +1,67 @@
+#Step 1
+#import packages.
+import pandas as pd
+import seaborn as sns
+from sklearn.model_selection import train_test_split
+from sklearn.linear_model import LinearRegression
+from sklearn.metrics import r2_score, mean_squared_error as MSE
+from sklearn.linear_model import LogisticRegression
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.pipeline import Pipeline
+import numpy as np
+from sklearn.model_selection import cross_val_score
+from sklearn.neighbors import KNeighborsClassifier
+
+#ReadCSV
+Titanic = pd.read_csv('/content/Titanic.csv')
+Titanic.head()
+
+##dummy codes male and female to numerical values.
+Titanic.loc[Titanic['Sex'] == 'male', 'sex_encoded'] = 1
+Titanic.loc[Titanic['Sex'] == 'female', 'sex_encoded'] = 0
+
+#create feature matrix of age, fare, and sex data as well as a target vector related to survival.
+X = Titanic[['sex_encoded','Fare','Age']]
+y = Titanic ['Survived']
+
+#splits data into training, validation, and testing set. 
+X_train_val,X_test,y_train_val,y_test = train_test_split(X,y,test_size =0.25,random_state = 42)
+X_train, X_val, y_train, y_val = train_test_split(X_train_val, y_train_val,test_size = 0.3333,random_state = 42)
+
+#Creates a pipeline that imputes missing values with the mean, scales numerical values to between 0 and 1, and creates a logistic regression
+pipe_std = Pipeline([
+('imp_mean', SimpleImputer(missing_values=np.nan, strategy='mean')),
+('scaler', StandardScaler()),
+('log_reg',LogisticRegression(random_state=0))])
+
+#Train the model 
+pipe_std.fit(X_train, y_train)
+train_accuracy_std = pipe_std.score(X_train, y_train)
+print(train_accuracy_std)
+#Training accuracy was .7820
+
+#Fit model to testing data.
+test_accuracy = pipe_std.score(X_test, y_test)
+print('The testing accuracy is', test_accuracy)
+#model accuracy is 77.13
+
+#create a second pipeline that uses mean imputation, simple scaling, and creates a classification model using Knearestneighbors
+Pipe2 = Pipeline([
+    ('imp_mean', SimpleImputer(missing_values=np.nan, strategy='mean')),
+    ('scaler', StandardScaler()),
+    ('Model', KNeighborsClassifier())])
+    
+#Check model fit on training data
+scores = cross_val_score(Pipe2, X_train, y_train, cv=10)
+print(scores.mean())
+print(scores.std())
+#The model has .7686 accuracy
+
+#Apply pipeline to test data
+scores = cross_val_score(Pipe2, X_test, y_test, cv=10)
+print(scores.mean())
+#Model accuracy was .7122
+print(scores.std())
+
+#It appears the simple logistic model was more accurate at predicting survival
